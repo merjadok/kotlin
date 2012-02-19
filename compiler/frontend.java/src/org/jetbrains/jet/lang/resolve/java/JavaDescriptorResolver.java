@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.compiled.ClsClassImpl;
+import com.intellij.psi.impl.java.stubs.impl.PsiJavaFileStubImpl;
 import com.intellij.psi.search.DelegatingGlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScope;
 import jet.typeinfo.TypeInfoVariance;
@@ -605,7 +606,13 @@ public class JavaDescriptorResolver {
         }
         
         PsiJavaFile containingFile = (PsiJavaFile) psiClass.getContainingFile();
-        String packageName = containingFile.getPackageName();
+        String packageName;
+        if (containingFile != null) {
+            packageName = containingFile.getPackageName();
+        } else {
+            PsiJavaFileStubImpl fileStub = (PsiJavaFileStubImpl) ((ClsClassImpl) psiClass).getStub().getParentStub();
+            packageName = fileStub.getPackageName();
+        }
         return resolveNamespace(packageName);
     }
 
