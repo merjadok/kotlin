@@ -35,6 +35,13 @@ import java.util.List;
  */
 public class DescriptorRenderer implements Renderer {
 
+    public static final DescriptorRenderer COMPACT = new DescriptorRenderer() {
+        @Override
+        protected boolean shouldRenderDefinedIn() {
+            return false;
+        }
+    };
+
     public static final DescriptorRenderer TEXT = new DescriptorRenderer();
 
     public static final DescriptorRenderer HTML = new DescriptorRenderer() {
@@ -106,8 +113,14 @@ public class DescriptorRenderer implements Renderer {
         if (declarationDescriptor == null) return lt() + "null>";
         StringBuilder stringBuilder = new StringBuilder();
         declarationDescriptor.accept(rootVisitor, stringBuilder);
-        appendDefinedIn(declarationDescriptor, stringBuilder);
+        if (shouldRenderDefinedIn()) {
+            appendDefinedIn(declarationDescriptor, stringBuilder);
+        }
         return stringBuilder.toString();
+    }
+
+    protected boolean shouldRenderDefinedIn() {
+        return true;
     }
 
     private void appendDefinedIn(DeclarationDescriptor declarationDescriptor, StringBuilder stringBuilder) {
@@ -122,7 +135,9 @@ public class DescriptorRenderer implements Renderer {
     public String renderAsObject(@NotNull ClassDescriptor classDescriptor) {
         StringBuilder stringBuilder = new StringBuilder();
         rootVisitor.renderClassDescriptor(classDescriptor, stringBuilder, "object");
-        appendDefinedIn(classDescriptor, stringBuilder);
+        if (shouldRenderDefinedIn()) {
+            appendDefinedIn(classDescriptor, stringBuilder);
+        }
         return stringBuilder.toString();
     }
 

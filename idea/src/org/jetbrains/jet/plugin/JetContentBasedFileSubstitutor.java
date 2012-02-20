@@ -37,9 +37,11 @@ import com.intellij.psi.stubs.PsiClassHolderFileStub;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.JetSemanticServices;
 import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
 import org.jetbrains.jet.lang.resolve.java.JavaSemanticServices;
+import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.resolve.DescriptorRenderer;
 
 import java.io.IOException;
@@ -74,7 +76,20 @@ public class JetContentBasedFileSubstitutor implements ContentBasedClassFileProc
             PsiClass psiClass = js.getClasses()[0];
             JavaDescriptorResolver jdr = jss.getDescriptorResolver();
             ClassDescriptor cd = jdr.resolveClass(psiClass);
-            builder.append(DescriptorRenderer.TEXT.render(cd));
+            if (cd != null) {
+                builder.append(DescriptorRenderer.COMPACT.render(cd));
+
+                builder.append(" {\n");
+
+                JetScope memberScope = cd.getDefaultType().getMemberScope();
+                for (DeclarationDescriptor member : memberScope.getAllDescriptors()) {
+                    if (member.getContainingDeclaration() == cd) {
+                        builder.append("    ").append(DescriptorRenderer.COMPACT.render(member)).append("\n");
+                    }
+                }
+
+                builder.append("}");
+            }
         }
         return builder.toString();
     }
